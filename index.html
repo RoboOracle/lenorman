@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор Арканов Таро</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lora', serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #e6e0fa 0%, #f5f5f5 100%);
+            color: #2d2d2d;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            font-family: 'Cinzel', serif;
+            color: #4b0082;
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        .input-group {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: #4b0082;
+        }
+        input {
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid #d8bfd8;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            border-color: #4b0082;
+            outline: none;
+        }
+        button {
+            background-color: #4b0082;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #6a0dad;
+            transform: translateY(-2px);
+        }
+        #results {
+            display: none;
+            margin-top: 30px;
+        }
+        .arcana-card {
+            background-color: #f9f5ff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 6px solid #4b0082;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        .arcana-card:hover {
+            transform: translateX(5px);
+        }
+        .arcana-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: #4b0082;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .arcana-number {
+            font-style: italic;
+            color: #666;
+        }
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8em;
+            color: #4b0082;
+            margin: 30px 0 15px;
+            font-weight: 700;
+        }
+        hr {
+            border: 0;
+            border-top: 3px solid #d8bfd8;
+            margin: 15px 0;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f9f5ff;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 0.9em;
+            color: #4b0082;
+        }
+        footer a {
+            color: #6a0dad;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        footer a:hover {
+            color: #4b0082;
+            text-decoration: underline;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+            .container {
+                padding: 20px;
+            }
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .section-title {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Калькулятор Арканов Таро</h1>
+        <div class="input-group">
+            <label for="birthYear">Введите год рождения:</label>
+            <input type="number" id="birthYear" min="1000" max="9999">
+        </div>
+        <div>
+            <button onclick="calculateArcana()">Рассчитать</button>
+            <button onclick="resetForm()">Сбросить</button>
+        </div>
+        <div id="results">
+            <div class="section-title">Как видят окружающие</div>
+            <hr>
+            <div class="arcana-card" id="perception"></div>
+            <div class="section-title">Миссии на воплощение</div>
+            <hr>
+            <div class="arcana-card" id="mission"></div>
+            <div class="section-title">Внутренний Мир</div>
+            <hr>
+            <div class="arcana-card" id="innerWorld"></div>
+        </div>
+    </div>
+    <footer>
+        © 2025 TavTarot. Все права защищены. | <a href="http://www.tavtarot.com">www.tavtarot.com</a>
+    </footer>
+
+    <script>
+        const arcanaList = [
+            { 
+                name: 'Дурак', 
+                number: 0, 
+                description: 'Архетип Дурака воплощает чистую свободу и открытость к новому, символизируя душу, готовую к приключениям без страха перед неизвестностью. Он учит доверять жизни, принимать риски и находить радость в каждом шаге пути, даже если цель неясна.' 
+            },
+            { 
+                name: 'Маг', 
+                number: 1, 
+                description: 'Маг — архетип творца и мастера, владеющего силой воли и ресурсами вселенной для воплощения идей. Он символизирует уверенность в своих способностях, умение направлять энергию и создавать реальность через намерение и действие.' 
+            },
+            { 
+                name: 'Верховная Жрица', 
+                number: 2, 
+                description: 'Верховная Жрица — хранительница тайн подсознания, воплощающая интуицию, внутреннюю мудрость и связь с божественным. Как архетип, она призывает прислушиваться к внутреннему голосу и искать ответы в тишине, за пределами рационального.' 
+            },
+            { 
+                name: 'Императрица', 
+                number: 3, 
+                description: 'Императрица — архетип Великой Матери, символизирующий плодородие, заботу, творчество и изобилие. Она учит находить гармонию с природой, питать свои проекты и окружать близких теплом и поддержкой.' 
+            },
+            { 
+                name: 'Император', 
+                number: 4, 
+                description: 'Император — архетип отца и правителя, представляющий структуру, дисциплину и стабильность. Он воплощает лидерство, ответственность и способность устанавливать порядок, защищая свои ценности и цели.' 
+            },
+            { 
+                name: 'Иерофант', 
+                number: 5, 
+                description: 'Иерофант — архетип духовного наставника, связывающий человека с традициями, верой и высшими истинами. Он призывает искать мудрость в коллективных знаниях и следовать этическим принципам, уважая установленные системы.' 
+            },
+            { 
+                name: 'Влюбленные', 
+                number: 6, 
+                description: 'Влюбленные — архетип гармонии и выбора, символизирующий любовь, единение и принятие важных решений сердцем. Они учат балансу между страстью и разумом, а также ценности глубоких связей с другими.' 
+            },
+            { 
+                name: 'Колесница', 
+                number: 7, 
+                description: 'Колесница — архетип воина и победителя, олицетворяющий решимость, контроль и движение к цели. Она символизирует внутреннюю силу, которая преодолевает препятствия через дисциплину и уверенность.' 
+            },
+            { 
+                name: 'Справедливость', 
+                number: 8, 
+                description: 'Справедливость — архетип равновесия и истины, воплощающий кармический закон и честность. Она призывает к объективности, принятию ответственности за свои действия и поиску гармонии через справедливые решения.' 
+            },
+            { 
+                name: 'Отшельник', 
+                number: 9, 
+                description: 'Отшельник — архетип искателя истины, символизирующий внутреннее путешествие, мудрость и уединение. Он учит находить свет внутри себя, размышлять о смысле жизни и доверять своей внутренней интуиции.' 
+            },
+            { 
+                name: 'Колесо Фортуны', 
+                number: 10, 
+                description: 'Колесо Фортуны — архетип судьбы и цикличности, отражающий неизбежные перемены и повороты жизни. Оно напоминает о принятии изменений, доверии к потоку вселенной и осознании, что каждый цикл приносит новые возможности.' 
+            },
+            { 
+                name: 'Сила', 
+                number: 11, 
+                description: 'Сила — архетип внутренней мощи и сострадания, представляющий мужество и терпение в преодолении трудностей. Она учит укрощать внутренние страхи с помощью любви и мягкой силы, находя баланс между духом и телом.' 
+            },
+            { 
+                name: 'Повешенный', 
+                number: 12, 
+                description: 'Повешенный — архетип жертвы и трансформации, символизирующий сдачу эго и принятие новых перспектив. Он призывает к терпению, отпусканию контроля и поиску истины через самопожертвование и внутреннее переосмысление.' 
+            },
+            { 
+                name: 'Смерть', 
+                number: 13, 
+                description: 'Смерть — архетип трансформации, знаменующий конец старого и начало нового. Она учит принимать неизбежные изменения, отпускать прошлое и открываться возрождению, которое следует за завершением.' 
+            },
+            { 
+                name: 'Умеренность', 
+                number: 14, 
+                description: 'Умеренность — архетип гармонии и баланса, воплощающий терпение и искусство сочетания противоположностей. Она призывает к умеренности, внутреннему миру и поиску равновесия в жизни через алхимию души.' 
+            },
+            { 
+                name: 'Дьявол', 
+                number: 15, 
+                description: 'Дьявол — архетип теневой стороны, символизирующий зависимости, иллюзии и материальные оковы. Он учит осознавать свои внутренние цепи, преодолевать искушения и освобождаться от ограничивающих убеждений.' 
+            },
+            { 
+                name: 'Башня', 
+                number: 16, 
+                description: 'Башня — архетип разрушения и откровения, представляющий внезапные перемены, которые рушат ложные структуры. Она побуждает принимать хаос как возможность для освобождения и строительства нового на правдивом фундаменте.' 
+            },
+            { 
+                name: 'Звезда', 
+                number: 17, 
+                description: 'Звезда — архетип надежды и исцеления, сияющий светом веры после тьмы. Она вдохновляет на восстановление, доверие к высшему руководству и обретение внутреннего покоя через связь с космосом.' 
+            },
+            { 
+                name: 'Луна', 
+                number: 18, 
+                description: 'Луна — архетип подсознания и иллюзий, ведущий через тени страха и неопределенности. Она учит доверять интуиции, различать реальность от фантазий и находить путь в темноте внутреннего мира.' 
+            },
+            { 
+                name: 'Солнце', 
+                number: 19, 
+                description: 'Солнце — архетип радости и жизненной силы, излучающий свет успеха, ясности и оптимизма. Оно символизирует внутреннюю энергию, уверенность и празднование жизни в ее полноте.' 
+            },
+            { 
+                name: 'Суд', 
+                number: 20, 
+                description: 'Суд — архетип пробуждения и возрождения, призывающий к внутреннему суду и освобождению от прошлого. Он побуждает принять свое истинное призвание, исцелиться и двигаться к высшей цели.' 
+            },
+            { 
+                name: 'Мир', 
+                number: 21, 
+                description: 'Мир — архетип завершения и единства, символизирующий гармонию, интеграцию и исполнение. Он отражает достижение целостности, связь со вселенной и радость от завершенного цикла.' 
+            },
+            { 
+                name: 'Дурак', 
+                number: 22, 
+                description: 'Архетип Дурака воплощает чистую свободу и открытость к новому, символизируя душу, готовую к приключениям без страха перед неизвестностью. Он учит доверять жизни, принимать риски и находить радость в каждом шаге пути, даже если цель неясна.' 
+            }
+        ];
+
+        function calculateArcana() {
+            const birthYear = parseInt(document.getElementById('birthYear').value);
+            const currentYear = new Date().getFullYear();
+
+            // Validate input
+            if (!birthYear || birthYear < 1000 || birthYear > currentYear) {
+                alert(`Пожалуйста, введите действительный год рождения между 1000 и ${currentYear}`);
+                return;
+            }
+
+            // Divide birth year by 400
+            const divisionResult = birthYear / 400; // e.g., 1985 / 400 = 4.9625
+            const integerPart = Math.floor(divisionResult); // e.g., 4
+            const decimalPart = divisionResult - integerPart; // e.g., 0.9625
+
+            // Special case: Years divisible by 400 (decimalPart = 0)
+            if (decimalPart === 0) {
+                displayResult('perception', arcanaList[0]);
+                displayResult('mission', arcanaList[0], 'Вторая миссия отсутствует (результат равен 0)');
+                displayResult('innerWorld', arcanaList[0]);
+                document.getElementById('results').style.display = 'block';
+                return;
+            }
+
+            // How Others Perceive You: Sum of all decimal part digits
+            const decimalStr = decimalPart.toFixed(6).split('.')[1] || '0'; // e.g., "962500" for 0.9625
+            const perceptionSum = decimalStr.split('').reduce((sum, digit) => sum + parseInt(digit), 0); // e.g., 9 + 6 + 2 + 5 = 22
+            const finalPerception = perceptionSum > 22 ? perceptionSum - 22 : perceptionSum; // Preserve 22
+
+            // Mission: Sum of integer and all decimal part digits
+            const allDigitsStr = integerPart.toString() + decimalStr; // e.g., "4962500"
+            const missionSum = allDigitsStr.split('').reduce((sum, digit) => sum + parseInt(digit), 0); // e.g., 4 + 9 + 6 + 2 + 5 = 26
+            const missionPrimary = missionSum > 22 ? missionSum - 22 : missionSum; // e.g., 26 - 22 = 4
+
+            // Second Mission: Kversumma
+            let secondMissionSum = missionSum;
+            if (secondMissionSum >= 22) {
+                secondMissionSum = missionSum.toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0); // e.g., 26 → 2 + 6 = 8
+                if (secondMissionSum > 22) {
+                    secondMissionSum = secondMissionSum - 22; // Reduce if kversumma > 22
+                }
+            }
+
+            // Inner World: Decimal part * 400, sum digits
+            const innerWorldValue = decimalPart * 400; // e.g., 0.9625 * 400 = 385
+            const innerWorldSum = Math.round(innerWorldValue).toString().split('').reduce((sum, digit) => sum + parseInt(digit), 0); // e.g., 3 + 8 + 5 = 16
+            const finalInnerWorld = innerWorldSum > 22 ? innerWorldSum - 22 : innerWorldSum; // Preserve 22
+
+            // Display results
+            displayResult('perception', arcanaList[finalPerception]);
+            displayResult('mission', arcanaList[missionPrimary], secondMissionSum !== missionPrimary ? `Вторая миссия: ${arcanaList[secondMissionSum].name} (${secondMissionSum})` : '');
+            displayResult('innerWorld', arcanaList[finalInnerWorld]);
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function displayResult(elementId, arcana, additionalInfo = '') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `
+                <div class="arcana-name">${arcana.name} <span class="arcana-number">(${arcana.number})</span></div>
+                <div>${arcana.description}</div>
+                ${additionalInfo ? `<div style="margin-top: 10px; font-weight: bold;">${additionalInfo}</div>` : ''}
+            `;
+        }
+
+        function resetForm() {
+            document.getElementById('birthYear').value = '';
+            document.getElementById('results').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
