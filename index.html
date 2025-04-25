@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Cinzel', serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background: linear-gradient(to bottom, #fce4ec, #e1bee7);
@@ -48,6 +48,9 @@
             background: #f8bbd0;
         }
         .result {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
             margin-top: 20px;
         }
         .card {
@@ -55,8 +58,11 @@
             border: 2px solid #f48fb1;
             border-radius: 10px;
             padding: 15px;
-            margin: 10px auto;
-            max-width: 300px;
+            margin: 10px;
+        }
+        .card h3 {
+            color: #f48fb1;
+            margin: 10px 0;
         }
         .error {
             color: #e91e63;
@@ -125,12 +131,25 @@
             { name: "Мужчина", number: 28, description: "Мужская энергия, значимый мужчина." },
             { name: "Женщина", number: 29, description: "Женская энергия, значимая женщина." },
             { name: "Лилии", number: 30, description: "Чистота, зрелость, гармония." },
-            { name: "Солнце", number: 31, description: "Чрезвычайно позитивная карта, обозначающая победы, счастье и успехи. Освещает ситуацию, приносит оптимизм и радость, раскрывает скрытое." },
+            { name: "Солнце", number: 31, description: "Чрезвычайно позитивная карта, обозначающая победы, счастье и успехи." },
             { name: "Луна", number: 32, description: "Эмоции, интуиция, слава." },
             { name: "Ключ", number: 33, description: "Решения, открытия, судьба." },
             { name: "Рыбы", number: 34, description: "Финансы, изобилие, чувства." },
             { name: "Якорь", number: 35, description: "Стабильность, надежность, работа." },
             { name: "Крест", number: 36, description: "Испытания, судьба, страдания." }
+        ];
+
+        // Сферы жизни
+        const spheres = [
+            "Общие вопросы и события дня",
+            "Любовь и взаимоотношения",
+            "Работа, финансы и деловые вопросы",
+            "Здоровье, самочувствие и благополучие",
+            "Значимая личность дня",
+            "Духовное развитие",
+            "Социальные связи",
+            "Личные цели",
+            "Скрытые возможности"
         ];
 
         // Сумма цифр числа
@@ -147,7 +166,7 @@
             return { day, month, year };
         }
 
-        // Расчет карты
+        // Расчет карт для всех сфер
         function calculateLenormand() {
             const birthDateInput = document.getElementById('birthDate').value;
             const targetDateInput = document.getElementById('targetDate').value;
@@ -177,26 +196,31 @@
                 const targetSum = sumDigits(targetDate.day) + sumDigits(targetDate.month) + sumDigits(targetDate.year);
                 const D = sumDigits(targetSum);
 
-                // Формула: 2 * П + Д
-                let cardNumber = 2 * P + D;
+                // Вычисление карт для каждой сферы
+                const cards = [];
+                for (let i = 0; i < spheres.length; i++) {
+                    // Формула: 2 * П + Д + i (модификатор для каждой сферы)
+                    let cardNumber = 2 * P + D + i;
 
-                // Приведение к диапазону 1–36
-                while (cardNumber > 36) {
-                    cardNumber = sumDigits(cardNumber);
+                    // Приведение к диапазону 1–36
+                    while (cardNumber > 36) {
+                        cardNumber = sumDigits(cardNumber);
+                    }
+                    if (cardNumber === 0) cardNumber = 36;
+
+                    // Поиск карты
+                    const card = lenormandCards.find(c => c.number === cardNumber) || lenormandCards[0];
+                    cards.push({ sphere: spheres[i], card });
                 }
-                if (cardNumber === 0) cardNumber = 36;
 
-                // Поиск карты
-                const card = lenormandCards.find(c => c.number === cardNumber) || lenormandCards[0];
-
-                // Вывод результата
-                resultDiv.innerHTML = `
+                // Вывод результатов
+                resultDiv.innerHTML = cards.map(({ sphere, card }) => `
                     <div class="card">
-                        <h3>${card.name}</h3>
-                        <p>Номер: ${card.number}</p>
+                        <h3>${sphere}</h3>
+                        <p><strong>Карта:</strong> ${card.name} (Номер: ${card.number})</p>
                         <p>${card.description}</p>
                     </div>
-                `;
+                `).join('');
 
                 loader.style.display = 'none';
             }, 1000);
